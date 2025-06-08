@@ -35,6 +35,7 @@ info_collection_prompt = """
         <li><strong>Email Address:</strong></li>
         <li><strong>Phone Number:</strong></li>
         <li><strong>Years of Experience:</strong></li>
+        <li><strong>Current Location:</strong></li>
         <li><strong>Desired Position:</strong></li>
     </ul>
 </div>

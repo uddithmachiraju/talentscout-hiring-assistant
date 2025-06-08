@@ -1,8 +1,14 @@
 import os 
 import streamlit as st 
 from chatbot.agent import generate_response
-from utils.info_extract import extract_user_info
-from prompts.base_prompts import exit_keywords, exit_message, info_collection_prompt, tech_stack_prompt, dynamic_generation_prompt 
+from utils.gibberish import is_gibberish
+from prompts.base_prompts import (
+    exit_keywords, 
+    exit_message, 
+    info_collection_prompt, 
+    tech_stack_prompt, 
+    dynamic_generation_prompt,
+    fallback_response)
 
 def render_chat_interface(greeting_prompt):
     st.set_page_config(page_title = "TalentScout Hiring Assistant", layout = "centered")
@@ -70,6 +76,7 @@ def render_chat_interface(greeting_prompt):
         email = st.text_input("Email Address", key="email")
         phone = st.text_input("Phone Number", key="phone")
         years_exp = st.text_input("Years of Experience", key="years_exp")
+        current_location = st.text_input("Current Location", key="current_location")
         desired_pos = st.text_input("Desired Position", key="desired_pos")
 
         if st.button("Submit Info"):
@@ -79,6 +86,7 @@ def render_chat_interface(greeting_prompt):
                 "Email Address": email,
                 "Phone Number": phone,
                 "Years of Experience": years_exp,
+                "Current Location": current_location,
                 "Desired Position": desired_pos
             }
             

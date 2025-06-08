@@ -72,6 +72,11 @@ def dynamic_generation_prompt(tech: str, level: str = "intermediate"):
         f"Make the questions concise but effective"
     )
 
+# Fallback response if the bot fails to understand the input
+fallback_response = (
+    "I'm sorry, I didn't understand that. Could you please rephrase?"
+)
+
 # Exit messages to terminate the conversation
 exit_message = (
     "Thank you for your time!"

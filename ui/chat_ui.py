@@ -1,7 +1,8 @@
 import os 
 import streamlit as st 
+from chatbot.agent import generate_response
 from utils.info_extract import extract_user_info
-from prompts.base_prompts import exit_keywords, exit_message, info_collection_prompt, tech_stack_prompt
+from prompts.base_prompts import exit_keywords, exit_message, info_collection_prompt, tech_stack_prompt, dynamic_generation_prompt 
 
 def render_chat_interface(greeting_prompt):
     st.set_page_config(page_title = "TalentScout Hiring Assistant", layout = "centered")
@@ -36,6 +37,7 @@ def render_chat_interface(greeting_prompt):
     if "started" not in st.session_state:
         st.session_state.started = False
 
+    # Start the session with Greeting message
     if not st.session_state.started:
         st.markdown(f"<div class='chat-bubble bot'><strong>TalentScout Hiring Assistant:</strong><br>{greeting_prompt}</div>", unsafe_allow_html = True)
         if st.button("Get Started"):
@@ -43,10 +45,12 @@ def render_chat_interface(greeting_prompt):
             st.rerun()
         return  
     
+    # The information panel needs to be visible only once
     if not st.session_state.conversation and not st.session_state.info:
         st.session_state.conversation.append(("bot", info_collection_prompt))
         st.session_state.info = True
 
+    # The tech stack panel needs to be visible only once
     if not st.session_state.conversation and not st.session_state.techstack:
         st.session_state.conversation.append(("bot", tech_stack_prompt))
         st.session_state.techstack = True 
@@ -57,7 +61,7 @@ def render_chat_interface(greeting_prompt):
         label = "TalentScout Hiring Assistant" if role == "bot" else st.session_state.candidate_name
         st.markdown(f"<div class='chat-bubble {role_class}'><strong>{label}:</strong><br>{message}</div>", unsafe_allow_html = True)
 
-    # Taking user details first with separate input fields
+    # Taking user details after the grreting message with separate input fields for each
     if not st.session_state.user_info_collected:
 
         st.header("Please enter your details")
@@ -78,14 +82,15 @@ def render_chat_interface(greeting_prompt):
                 "Desired Position": desired_pos
             }
             
-            print(user_info_dict)
+            print(user_info_dict) 
             st.session_state.user_profile = user_info_dict
 
-            # Use the user name for the chat 
+            # Use the user/candidate name for the chat 
             candidate_name = user_info_dict.get("Full Name", "Candidate")
             st.session_state.candidate_name = candidate_name
             st.session_state.user_info_collected = True
-            # Remove the initial info collection prompt from conversation
+
+            # Remove the info panel from conversation 
             st.session_state.conversation = [
                 msg for msg in st.session_state.conversation if msg[1] != info_collection_prompt
             ]
@@ -93,20 +98,32 @@ def render_chat_interface(greeting_prompt):
 
             st.rerun()
 
-    # After info collected, ask for tech stack
+    # After info collected, we will ask for tech stack
     elif st.session_state.user_info_collected and "tech_stack_collected" not in st.session_state:
         tech_stack = st.text_input("Tech Stack (e.g., Python, ML, Docker)", key="tech_stack")
 
         if st.button("Submit Tech Stack"):
             st.session_state.user_profile["Tech Stack"] = tech_stack
             st.session_state.tech_stack_collected = True
+
+            # Remove the tech stack panel from conversation 
             st.session_state.conversation = [
                 msg for msg in st.session_state.conversation if msg[1] != tech_stack_prompt
             ]
 
             # Add bot message confirming tech stack collection
-            bot_reply = f"Thanks {st.session_state.candidate_name}! I’ve noted your tech stack."
+            bot_reply = (
+                f"Thank you, {st.session_state.candidate_name}. I’ve recorded your tech stack: "
+                "Let's proceed with some questions based on it."
+            )
             st.session_state.conversation.append(("bot", bot_reply))
+
+            # # Generate the questions for the user based on the tech stacks
+            hidden_prompt = dynamic_generation_prompt(tech_stack) 
+            llm_context = st.session_state.conversation + [("system", hidden_prompt)]
+            generate_question = generate_response(llm_context)
+            st.session_state.conversation.append(("bot", generate_question)) 
+
             st.rerun()
 
     # Taking input from the user 
@@ -123,7 +140,8 @@ def render_chat_interface(greeting_prompt):
                     st.session_state.conversation.append(("bot", exit_message))
                     st.session_state.ended = True
                 else:
-                    bot_reply = "Thanks! Let's continue with the next step."  # Placeholder
+                    # Generate AI reply
+                    bot_reply = generate_response(st.session_state.conversation)
                     st.session_state.conversation.append(("bot", bot_reply))
 
                 st.rerun()

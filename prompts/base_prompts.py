@@ -65,7 +65,7 @@ tech_stack_prompt = """
 """
 
 # Generate dynamic prompt for technical questions
-def dynamic_generation_prompt(tech: str, level: str): 
+def dynamic_generation_prompt(tech: str, level: str = "intermediate"): 
     return (
         f"Generate 3 technical interview questions at {level} level"
         f"to evaluate a candidate skills in {tech}"

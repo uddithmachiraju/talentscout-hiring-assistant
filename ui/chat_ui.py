@@ -1,14 +1,12 @@
 import os 
 import streamlit as st 
 from chatbot.agent import generate_response
-from utils.gibberish import is_gibberish
 from prompts.base_prompts import (
     exit_keywords, 
     exit_message, 
     info_collection_prompt, 
     tech_stack_prompt, 
-    dynamic_generation_prompt,
-    fallback_response)
+    dynamic_generation_prompt)
 
 def render_chat_interface(greeting_prompt):
     st.set_page_config(page_title = "TalentScout Hiring Assistant", layout = "centered")

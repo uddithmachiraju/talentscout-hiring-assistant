@@ -16,7 +16,7 @@ In this project I built a AI-Powered Hiring Assistance chatbot the helps in the 
 - Fallback response and exit handling.
 
 ### Access it from the streamlit cloud(free tier) 
-Link: 
+Link: https://uddithmachiraju-talentscout-hiring-assistant-app-egyank.streamlit.app/
 
 ## Installation Instructions:
 Follow the steps to set up the project locally:
